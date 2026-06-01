@@ -220,3 +220,6 @@ __marimo__/
 # data
 data/*csv
 data/*parquet
+
+# pickle files
+models/*pkl
