@@ -7,11 +7,13 @@ requires-python = ">=3.13"
 dependencies = [
     "catboost>=1.2.10",
     "category-encoders>=2.9.0",
+    "fastparquet>=2026.5.0",
     "lightgbm>=4.6.0",
     "matplotlib>=3.10.9",
     "numpy>=2.4.6",
     "optuna>=4.9.0",
     "pandas>=3.0.3",
+    "pyarrow>=24.0.0",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
     "seaborn>=0.13.2",
