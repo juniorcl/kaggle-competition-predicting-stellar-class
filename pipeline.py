@@ -1,6 +1,8 @@
 import subprocess
 import sys
 
+from src import NUM_LAYERS
+
 
 def run(cmd):
     print(f">>> {cmd}")
@@ -11,8 +13,9 @@ def run(cmd):
 
 
 if __name__ == "__main__":
-    run("python main.py --layer layer_one")
-    run("python main.py --stack layer_one")
-    run("python main.py --layer layer_two --data data/X_train_stacking_layer_one.parquet")
-    run("python main.py --stack layer_two")
+    for i in range(1, NUM_LAYERS + 1):
+        layer = f"layer_{i}"
+        run(f"python main.py --layer {layer}")
+        if i < NUM_LAYERS:
+            run(f"python main.py --stack {layer}")
     print("=== Pipeline completo ===")

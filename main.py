@@ -62,14 +62,13 @@ def train_models(models, X_train, y_train, logger, force=False):
 
 def generate_stack(layer: str, logger):
     from src import generate_stacking_features
-    data_map = {
-        "layer_one": ("data/X_train_raw.parquet", "data/X_test_raw.parquet"),
-        "layer_two": ("data/X_train_stacking_layer_one.parquet", "data/X_test_stacking_layer_one.parquet"),
-    }
-    if layer not in data_map:
-        logger.error(f"Unknown layer: {layer}")
-        sys.exit(1)
-    train_path, test_path = data_map[layer]
+    if layer == "layer_1":
+        train_path, test_path = "data/X_train_raw.parquet", "data/X_test_raw.parquet"
+    else:
+        prev = layer.rsplit("_", 1)[0] + "_" + str(int(layer.split("_")[1]) - 1)
+        train_path = f"data/X_train_stacking_{prev}.parquet"
+        test_path = f"data/X_test_stacking_{prev}.parquet"
+
     logger.info(f"Loading train: {train_path}, test: {test_path}")
     X_train = pd.read_parquet(train_path)
     y_train = pd.read_parquet("data/y_train.parquet")
@@ -83,11 +82,19 @@ def generate_stack(layer: str, logger):
     )
 
 
+def resolve_data_path(layer: str) -> str:
+    if layer == "layer_1":
+        return "data/X_train_raw.parquet"
+    num = int(layer.split("_")[1])
+    prev = f"layer_{num - 1}"
+    return f"data/X_train_stacking_{prev}.parquet"
+
+
 def main():
     parser = argparse.ArgumentParser(description="Kaggle Stellar Classification Pipeline")
-    parser.add_argument("--layer", choices=["layer_one", "layer_two"], help="Train models for a specific layer")
-    parser.add_argument("--data", default=None, help="Training data parquet path")
-    parser.add_argument("--stack", choices=["layer_one", "layer_two"], help="Generate stacking features for a layer")
+    parser.add_argument("--layer", help="Train models for a specific layer (e.g. layer_1, layer_2, ...)")
+    parser.add_argument("--data", default=None, help="Training data parquet path (overrides auto-resolve)")
+    parser.add_argument("--stack", help="Generate stacking features for a layer (e.g. layer_1, layer_2, ...)")
     parser.add_argument("--force", action="store_true", help="Force retrain even if model exists")
     args = parser.parse_args()
 
@@ -98,10 +105,11 @@ def main():
         return
 
     if args.layer:
+        if args.layer not in LAYERS:
+            logger.error(f"Unknown layer: {args.layer}. Available: {list(LAYERS.keys())}")
+            sys.exit(1)
         models = LAYERS[args.layer]
-        data_path = args.data or f"data/X_train_{args.layer.replace('one', '1').replace('two', '2')}.parquet"
-        if args.layer == "layer_two" and args.data is None:
-            data_path = "data/X_train_stacking_layer_one.parquet"
+        data_path = args.data or resolve_data_path(args.layer)
     else:
         models = MODEL_REGISTRY
         data_path = "data/X_train_raw.parquet"

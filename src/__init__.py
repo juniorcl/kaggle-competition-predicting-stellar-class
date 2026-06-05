@@ -27,9 +27,40 @@ from .trunsvd_nystroem_logistic_regression_tuning import tune_trunsvd_nystroem_l
 from .trunsvd_rbfsampler_logistic_regression_tuning import tune_trunsvd_rbfsampler_logistic_regression
 from .trunsvd_nystroem_ridge_tuning import tune_trunsvd_nystroem_ridge
 from .trunsvd_rbfsampler_ridge_tuning import tune_trunsvd_rbfsampler_ridge
+
+from .stacking_tuning import (
+    tune_stacking_sgd,
+    tune_stacking_ridge,
+    tune_stacking_logistic_regression,
+    tune_stacking_xgboost,
+    tune_stacking_catboost,
+    tune_stacking_lightgbm,
+    tune_stacking_extra_tree,
+    tune_stacking_random_forest,
+    tune_stacking_hist_gradient_boosting,
+    tune_stacking_trunsvd_catboost,
+    tune_stacking_trunsvd_xgboost,
+    tune_stacking_trunsvd_lightgbm,
+    tune_stacking_trunsvd_extra_tree,
+    tune_stacking_trunsvd_random_forest,
+    tune_stacking_trunsvd_hist_gradient_boosting,
+    tune_stacking_trunsvd_sgd,
+    tune_stacking_trunsvd_ridge,
+    tune_stacking_trunsvd_logistic_regression,
+    tune_stacking_trunsvd_knn,
+    tune_stacking_trunsvd_nystroem_knn,
+    tune_stacking_trunsvd_rbfsampler_knn,
+    tune_stacking_trunsvd_nystroem_sgd,
+    tune_stacking_trunsvd_rbfsampler_sgd,
+    tune_stacking_trunsvd_nystroem_logistic_regression,
+    tune_stacking_trunsvd_rbfsampler_logistic_regression,
+    tune_stacking_trunsvd_nystroem_ridge,
+    tune_stacking_trunsvd_rbfsampler_ridge,
+)
+
 from .stacking import generate_stacking_features
 
-from .config import MODEL_REGISTRY, LAYERS, LAYER_ONE_MODELS, LAYER_TWO_MODELS
+from .config import NUM_LAYERS, MODEL_REGISTRY, RAW_MODEL_REGISTRY, STACKING_MODEL_REGISTRY, LAYERS
 
 
 __all__ = [
@@ -39,11 +70,11 @@ __all__ = [
     "tune_extra_tree",
     "tune_random_forest",
     "tune_hist_gradient_boosting",
-    
+
     "tune_ridge",
     "tune_sgdclassifier",
     "tune_logistic_regression",
-    
+
     "tune_trunsvd_catboost",
     "tune_trunsvd_xgboost",
     "tune_trunsvd_lightgbm",
@@ -63,10 +94,39 @@ __all__ = [
     "tune_trunsvd_nystroem_ridge",
     "tune_trunsvd_rbfsampler_ridge",
 
+    "tune_stacking_sgd",
+    "tune_stacking_ridge",
+    "tune_stacking_logistic_regression",
+    "tune_stacking_xgboost",
+    "tune_stacking_catboost",
+    "tune_stacking_lightgbm",
+    "tune_stacking_extra_tree",
+    "tune_stacking_random_forest",
+    "tune_stacking_hist_gradient_boosting",
+    "tune_stacking_trunsvd_catboost",
+    "tune_stacking_trunsvd_xgboost",
+    "tune_stacking_trunsvd_lightgbm",
+    "tune_stacking_trunsvd_extra_tree",
+    "tune_stacking_trunsvd_random_forest",
+    "tune_stacking_trunsvd_hist_gradient_boosting",
+    "tune_stacking_trunsvd_sgd",
+    "tune_stacking_trunsvd_ridge",
+    "tune_stacking_trunsvd_logistic_regression",
+    "tune_stacking_trunsvd_knn",
+    "tune_stacking_trunsvd_nystroem_knn",
+    "tune_stacking_trunsvd_rbfsampler_knn",
+    "tune_stacking_trunsvd_nystroem_sgd",
+    "tune_stacking_trunsvd_rbfsampler_sgd",
+    "tune_stacking_trunsvd_nystroem_logistic_regression",
+    "tune_stacking_trunsvd_rbfsampler_logistic_regression",
+    "tune_stacking_trunsvd_nystroem_ridge",
+    "tune_stacking_trunsvd_rbfsampler_ridge",
+
     "generate_stacking_features",
 
+    "NUM_LAYERS",
     "MODEL_REGISTRY",
+    "RAW_MODEL_REGISTRY",
+    "STACKING_MODEL_REGISTRY",
     "LAYERS",
-    "LAYER_ONE_MODELS",
-    "LAYER_TWO_MODELS",
 ]
