@@ -14,7 +14,7 @@ Multi-layer stacking pipeline for Kaggle's [Playground Series S6E6](https://www.
                     ┌───────────▼───────────┐
                     │  main.py --layer      │
                     │  layer_one            │
-                    │  (13 models)          │
+                     │  (21 models)          │
                     └───────────┬───────────┘
                                 │
                     ┌───────────▼───────────┐
@@ -59,7 +59,7 @@ Multi-layer stacking pipeline for Kaggle's [Playground Series S6E6](https://www.
 
 | Layer | Models | Trained on | Stacking features |
 |-------|--------|------------|-------------------|
-| **layer_one** | 13 models (SGD, Ridge, LogisticRegression, 10 TruncatedSVD variants + KNN) | `X_train_raw.parquet` | Prediction probabilities (class 0, 1) from each model → 26 features |
+| **layer_one** | 21 models (SGD, Ridge, LogisticRegression, 10 TruncatedSVD variants, 3 KNN variants, 6 kernel approximation variants) | `X_train_raw.parquet` | Prediction probabilities (class 0, 1) from each model → 42 features |
 | **layer_two** | 6 tree-based models (XGBoost, CatBoost, LightGBM, ExtraTrees, RandomForest, HistGradientBoosting) | `X_train_stacking_layer_one.parquet` | Prediction probabilities → 12 features |
 
 Each layer's models generate out-of-fold predictions (`cross_val_predict`) for training data and direct predictions for test data. These probability features feed into the next layer.
@@ -84,7 +84,7 @@ Each layer's models generate out-of-fold predictions (`cross_val_predict`) for t
 │   ├── __init__.py           # Package exports
 │   ├── config.py             # MODEL_REGISTRY, LAYERS config
 │   ├── stacking.py           # generate_stacking_features()
-│   ├── *tuning.py            # One file per model (19 total)
+│   ├── *tuning.py            # One file per model (27 total)
 │   ├── utils/
 │   │   ├── preprocessing.py  # column_transformer (scalers + target encoder)
 │   │   ├── dump_model.py     # pickle serializer
@@ -123,7 +123,7 @@ Requires Python ≥ 3.13. Dependencies managed by `uv`. See `pyproject.toml` for
 python main.py
 ```
 
-Trains all 19 models on `data/X_train_raw.parquet`.
+Trains all 27 models on `data/X_train_raw.parquet`.
 
 ### 2. Train a specific layer
 
@@ -165,7 +165,7 @@ Use notebooks `5.0_stacking_submission.ipynb` or `5.1_stacking_submission.ipynb`
 
 ## Model Details
 
-### Layer One (13 models)
+### Layer One (21 models)
 
 | Model | n_trials | Pipeline |
 |-------|----------|----------|
@@ -182,6 +182,14 @@ Use notebooks `5.0_stacking_submission.ipynb` or `5.1_stacking_submission.ipynb`
 | TruncatedSVD + Ridge | 60 | `column_transformer → TruncatedSVD → Ridge → Calibrated` |
 | TruncatedSVD + LogisticRegression | 60 | `column_transformer → TruncatedSVD → LogisticRegression` |
 | TruncatedSVD + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → KNN` |
+| TruncatedSVD + Nystroem + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → KNN` |
+| TruncatedSVD + RBFSampler + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → KNN` |
+| TruncatedSVD + Nystroem + SGD | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → SGD` |
+| TruncatedSVD + RBFSampler + SGD | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → SGD` |
+| TruncatedSVD + Nystroem + LogisticRegression | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → LogisticRegression` |
+| TruncatedSVD + RBFSampler + LogisticRegression | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → LogisticRegression` |
+| TruncatedSVD + Nystroem + Ridge | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → Ridge → Calibrated` |
+| TruncatedSVD + RBFSampler + Ridge | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → Ridge → Calibrated` |
 
 ### Layer Two (6 models)
 
