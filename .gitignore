@@ -223,3 +223,14 @@ data/*parquet
 
 # pickle files
 models/*pkl
+
+# catboost
+/src/catboost_info/*
+notebooks/catboost_info/*
+
+# generated logs and results
+src/logs/
+results/
+
+# opencode
+.opencode
