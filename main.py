@@ -31,10 +31,16 @@ def save_result(model_name: str, status: str, log_loss: float | str,
     df.to_csv(RESULTS_FILE, index=False)
 
 
-def train_models(models, X_train, y_train, logger):
+def train_models(models, X_train, y_train, logger, force=False):
     total_start = time.perf_counter()
     for model_cfg in models:
         name = model_cfg['name']
+        model_path = model_cfg['model_path']
+
+        if not force and os.path.exists(model_path):
+            logger.info(f"Skipping {name} (exists: {model_path})")
+            continue
+
         logger.info(f"--- Training {name} ---")
         start = time.perf_counter()
         try:
@@ -82,6 +88,7 @@ def main():
     parser.add_argument("--layer", choices=["layer_one", "layer_two"], help="Train models for a specific layer")
     parser.add_argument("--data", default=None, help="Training data parquet path")
     parser.add_argument("--stack", choices=["layer_one", "layer_two"], help="Generate stacking features for a layer")
+    parser.add_argument("--force", action="store_true", help="Force retrain even if model exists")
     args = parser.parse_args()
 
     logger = setup_model_logger('main')
@@ -104,7 +111,7 @@ def main():
     y_train = pd.read_parquet("data/y_train.parquet")
     logger.info(f"Train shape: {X_train.shape}")
 
-    train_models(models, X_train, y_train, logger)
+    train_models(models, X_train, y_train, logger, force=args.force)
     logger.info(f"Results saved to {RESULTS_FILE}")
 
 
