@@ -19,6 +19,14 @@ from .trunsvd_sgdclassifier_tuning import tune_trunsvd_sgdclassifier
 from .trunsvd_ridge_tuning import tune_trunsvd_ridge
 from .trunsvd_logistic_regression_tuning import tune_trunsvd_logistic_regression
 from .trunsvd_knn_tuning import tune_trunsvd_knn
+from .trunsvd_nystroem_knn_tuning import tune_trunsvd_nystroem_knn
+from .trunsvd_rbfsampler_knn_tuning import tune_trunsvd_rbfsampler_knn
+from .trunsvd_nystroem_sgd_tuning import tune_trunsvd_nystroem_sgd
+from .trunsvd_rbfsampler_sgd_tuning import tune_trunsvd_rbfsampler_sgd
+from .trunsvd_nystroem_logistic_regression_tuning import tune_trunsvd_nystroem_logistic_regression
+from .trunsvd_rbfsampler_logistic_regression_tuning import tune_trunsvd_rbfsampler_logistic_regression
+from .trunsvd_nystroem_ridge_tuning import tune_trunsvd_nystroem_ridge
+from .trunsvd_rbfsampler_ridge_tuning import tune_trunsvd_rbfsampler_ridge
 from .stacking import generate_stacking_features
 
 from .config import MODEL_REGISTRY, LAYERS, LAYER_ONE_MODELS, LAYER_TWO_MODELS
@@ -46,6 +54,14 @@ __all__ = [
     "tune_trunsvd_ridge",
     "tune_trunsvd_logistic_regression",
     "tune_trunsvd_knn",
+    "tune_trunsvd_nystroem_knn",
+    "tune_trunsvd_rbfsampler_knn",
+    "tune_trunsvd_nystroem_sgd",
+    "tune_trunsvd_rbfsampler_sgd",
+    "tune_trunsvd_nystroem_logistic_regression",
+    "tune_trunsvd_rbfsampler_logistic_regression",
+    "tune_trunsvd_nystroem_ridge",
+    "tune_trunsvd_rbfsampler_ridge",
 
     "generate_stacking_features",
 

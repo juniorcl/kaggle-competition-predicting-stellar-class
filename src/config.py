@@ -18,6 +18,14 @@ from . import (
     tune_trunsvd_ridge,
     tune_trunsvd_logistic_regression,
     tune_trunsvd_knn,
+    tune_trunsvd_nystroem_knn,
+    tune_trunsvd_rbfsampler_knn,
+    tune_trunsvd_nystroem_sgd,
+    tune_trunsvd_rbfsampler_sgd,
+    tune_trunsvd_nystroem_logistic_regression,
+    tune_trunsvd_rbfsampler_logistic_regression,
+    tune_trunsvd_nystroem_ridge,
+    tune_trunsvd_rbfsampler_ridge,
 )
 
 LAYER_ONE_MODELS = [
@@ -34,6 +42,14 @@ LAYER_ONE_MODELS = [
     {"name": "trunsvd_ridge", "func": tune_trunsvd_ridge, "model_path": "models/layer_one/trunsvd_ridge.pkl", "n_trials": 60},
     {"name": "trunsvd_logistic_regression", "func": tune_trunsvd_logistic_regression, "model_path": "models/layer_one/trunsvd_logistic_regression.pkl", "n_trials": 60},
     {"name": "trunsvd_knn", "func": tune_trunsvd_knn, "model_path": "models/layer_one/trunsvd_knn.pkl", "n_trials": 60},
+    {"name": "trunsvd_nystroem_knn", "func": tune_trunsvd_nystroem_knn, "model_path": "models/layer_one/trunsvd_nystroem_knn.pkl", "n_trials": 60},
+    {"name": "trunsvd_rbfsampler_knn", "func": tune_trunsvd_rbfsampler_knn, "model_path": "models/layer_one/trunsvd_rbfsampler_knn.pkl", "n_trials": 60},
+    {"name": "trunsvd_nystroem_sgd", "func": tune_trunsvd_nystroem_sgd, "model_path": "models/layer_one/trunsvd_nystroem_sgd.pkl", "n_trials": 60},
+    {"name": "trunsvd_rbfsampler_sgd", "func": tune_trunsvd_rbfsampler_sgd, "model_path": "models/layer_one/trunsvd_rbfsampler_sgd.pkl", "n_trials": 60},
+    {"name": "trunsvd_nystroem_logistic_regression", "func": tune_trunsvd_nystroem_logistic_regression, "model_path": "models/layer_one/trunsvd_nystroem_logistic_regression.pkl", "n_trials": 60},
+    {"name": "trunsvd_rbfsampler_logistic_regression", "func": tune_trunsvd_rbfsampler_logistic_regression, "model_path": "models/layer_one/trunsvd_rbfsampler_logistic_regression.pkl", "n_trials": 60},
+    {"name": "trunsvd_nystroem_ridge", "func": tune_trunsvd_nystroem_ridge, "model_path": "models/layer_one/trunsvd_nystroem_ridge.pkl", "n_trials": 60},
+    {"name": "trunsvd_rbfsampler_ridge", "func": tune_trunsvd_rbfsampler_ridge, "model_path": "models/layer_one/trunsvd_rbfsampler_ridge.pkl", "n_trials": 60},
 ]
 
 LAYER_TWO_MODELS = [
