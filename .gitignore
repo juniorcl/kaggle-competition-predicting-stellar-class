@@ -225,6 +225,7 @@ data/*parquet
 models/*pkl
 
 # catboost
+catboost_info/
 /src/catboost_info/*
 notebooks/catboost_info/*
 

@@ -13,45 +13,24 @@ Multi-layer stacking pipeline for Kaggle's [Playground Series S6E6](https://www.
                                 │
                     ┌───────────▼───────────┐
                     │  main.py --layer      │
-                    │  layer_1              │
-                    │  (21 models)          │
+                    │  layer_N              │
+                    │  (24 models)          │
                     └───────────┬───────────┘
                                 │
                     ┌───────────▼───────────┐
-                    │  models/layer_1/*     │
+                    │  models/layer_N/*     │
                     │  .pkl files           │
                     └───────────┬───────────┘
                                 │
                     ┌───────────▼───────────┐
                     │  main.py --stack      │
-                    │  layer_1              │
+                    │  layer_N              │
                     │  (cross_val_predict)  │
                     └───────────┬───────────┘
                                 │
                     ┌───────────▼───────────┐
                     │ X_train_stacking_     │
-                    │ layer_1.parquet       │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │  main.py --layer      │
-                    │  layer_2              │
-                    │  (27 models)          │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │  models/layer_2/*     │
-                    │  .pkl files           │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │  main.py --stack      │
-                    │  layer_2              │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │ X_train_stacking_     │
-                    │ layer_2.parquet       │
+                    │ layer_N.parquet       │
                     └───────────────────────┘
 ```
 
@@ -59,11 +38,10 @@ Multi-layer stacking pipeline for Kaggle's [Playground Series S6E6](https://www.
 
 | Layer | Models | Trained on | Stacking features |
 |-------|--------|------------|-------------------|
-| **layer_1** | 21 models (linear, tree, TruncatedSVD, kernel approximation variants) | `X_train_raw.parquet` | Prediction probabilities (class 0, 1) from each model → 42 features |
-| **layer_2** | 27 models (same types + native tree, no preprocessing) | `X_train_stacking_layer_1.parquet` | Prediction probabilities → 54 features |
-| **layer_N** | Same 27 stacking models | `X_train_stacking_layer_{N-1}.parquet` | Configurable via `NUM_LAYERS` in `src/config.py` |
+| **layer_1** | 24 models (linear, tree, TruncatedSVD, neural network, naive bayes) | `X_train_raw.parquet` | Prediction probabilities from each model → 72 features |
+| **layer_N** | Same 24 models | `X_train_stacking_layer_{N-1}.parquet` | Configurable via `NUM_LAYERS` in `src/config.py` |
 
-Each layer's models generate out-of-fold predictions (`cross_val_predict`) for training data and direct predictions for test data. These probability features feed into the next layer.
+All layers use the same unified model registry. Each model generates out-of-fold predictions (`cross_val_predict`) for training data and direct predictions for test data. These probability features feed into the next layer.
 
 ### Adding More Layers
 
@@ -73,7 +51,7 @@ Change `NUM_LAYERS` in `src/config.py`:
 NUM_LAYERS = 3  # adds layer_3
 ```
 
-Then run `python pipeline.py` or train individually:
+Then train individually:
 
 ```bash
 python main.py --layer layer_3
@@ -84,7 +62,6 @@ python main.py --stack layer_3
 
 ```
 ├── main.py                  # CLI: train models or generate stacking features
-├── pipeline.py              # End-to-end orchestrator (loops over N layers)
 ├── pyproject.toml           # Python dependencies
 ├── data/
 │   ├── train.csv            # Original competition data
@@ -100,18 +77,16 @@ python main.py --stack layer_3
 │   └── sample_submission.csv
 ├── src/
 │   ├── __init__.py           # Package exports
-│   ├── config.py             # Model registries, layer config, NUM_LAYERS
-│   ├── stacking.py           # generate_stacking_features()
-│   ├── stacking_tuning.py    # 27 stacking tuners (layers 2+)
-│   ├── *tuning.py            # One file per raw model (21 total)
+│   ├── config.py             # Model registry, layer config, NUM_LAYERS
+│   ├── *tuning.py            # One file per model (24 total)
 │   ├── utils/
 │   │   ├── preprocessing.py  # column_transformer (scalers + target encoder)
 │   │   ├── dump_model.py     # pickle serializer
 │   │   └── logging_setup.py  # Centralized logger factory
 │   └── logs/                 # Per-model training logs
 ├── models/
-│   ├── layer_1/              # Trained .pkl files (layer_1 raw models)
-│   └── layer_2/              # Trained .pkl files (layer_2 stacking models)
+│   ├── layer_1/              # Trained .pkl files (layer_1)
+│   └── layer_2/              # Trained .pkl files (layer_2)
 ├── notebooks/
 │   ├── 1.0_eda.ipynb
 │   ├── 2.0_feature_engineering.ipynb
@@ -136,22 +111,22 @@ Requires Python ≥ 3.13. Dependencies managed by `uv`. See `pyproject.toml` for
 
 ## Usage
 
-### 1. Train all models (raw features)
+### 1. Train all models
 
 ```bash
 python main.py
 ```
 
-Trains all 21 raw models on `data/X_train_raw.parquet`.
+Trains all 24 models on `data/X_train_raw.parquet` (layer_1).
 
 ### 2. Train a specific layer
 
 ```bash
 python main.py --layer layer_1
-python main.py --layer layer_2 --data data/X_train_stacking_layer_1.parquet
+python main.py --layer layer_2
 ```
 
-Layers >= 2 auto-resolve data from previous layer's stacking features.
+Layers >= 2 auto-resolve data from previous layer's stacking features. Each layer trains the same set of models.
 
 ### 3. Generate stacking features
 
@@ -166,79 +141,42 @@ Each call:
 - Generates direct prediction probabilities for test data
 - Saves parquet files to `data/X_train_stacking_<layer>.parquet` and `data/X_test_stacking_<layer>.parquet`
 
-### 4. Full end-to-end pipeline
-
-```bash
-python pipeline.py
-```
-
-Automatically loops over all layers (configured by `NUM_LAYERS` in `src/config.py`).
-
-### 5. Generate submission
+### 4. Generate submission
 
 Use notebooks `5.0_stacking_submission.ipynb` or `5.1_stacking_submission.ipynb` with the generated stacking features to train a meta-model and produce `submission.csv`.
 
 ## Model Details
 
-### Layer 1 — Raw Features (21 models)
+All layers use the same unified model registry (24 models). Layer 1 trains on raw features with `column_transformer` preprocessing. Layers 2+ train on stacking probabilities with `StandardScaler` only.
+
+Models without n_trials are simple classifiers with no hyperparameter tuning.
 
 | Model | n_trials | Pipeline |
 |-------|----------|----------|
+| XGBoost | 30 | `TargetEncoder → XGBClassifier` |
+| CatBoost | 30 | `CatBoostEncoder → CatBoostClassifier` |
+| LightGBM | 30 | `TargetEncoder → LGBMClassifier` |
+| ExtraTrees | 30 | `TargetEncoder → ExtraTreesClassifier` |
+| RandomForest | 30 | `TargetEncoder → RandomForestClassifier` |
+| HistGradientBoosting | 30 | `TargetEncoder → HistGradientBoostingClassifier` |
 | SGDClassifier | 60 | `column_transformer → SGDClassifier` |
-| Ridge + CalibratedClassifierCV | 60 | `column_transformer → Ridge → CalibratedClassifierCV` |
+| Ridge + Calibrated | 60 | `column_transformer → RidgeClassifier → Calibrated` |
 | LogisticRegression | 60 | `column_transformer → LogisticRegression` |
-| TruncatedSVD + CatBoost | 30 | `column_transformer → TruncatedSVD → CatBoost` |
-| TruncatedSVD + XGBoost | 30 | `column_transformer → TruncatedSVD → XGBoost` |
-| TruncatedSVD + LightGBM | 30 | `column_transformer → TruncatedSVD → LightGBM` |
-| TruncatedSVD + ExtraTrees | 30 | `column_transformer → TruncatedSVD → ExtraTrees` |
-| TruncatedSVD + RandomForest | 30 | `column_transformer → TruncatedSVD → RandomForest` |
-| TruncatedSVD + HistGradientBoosting | 30 | `column_transformer → TruncatedSVD → HistGradientBoosting` |
-| TruncatedSVD + SGD | 60 | `column_transformer → TruncatedSVD → SGD` |
-| TruncatedSVD + Ridge | 60 | `column_transformer → TruncatedSVD → Ridge → Calibrated` |
-| TruncatedSVD + LogisticRegression | 60 | `column_transformer → TruncatedSVD → LogisticRegression` |
-| TruncatedSVD + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → KNN` |
-| TruncatedSVD + Nystroem + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → KNN` |
-| TruncatedSVD + RBFSampler + KNN | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → KNN` |
-| TruncatedSVD + Nystroem + SGD | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → SGD` |
-| TruncatedSVD + RBFSampler + SGD | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → SGD` |
-| TruncatedSVD + Nystroem + LogisticRegression | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → LogisticRegression` |
-| TruncatedSVD + RBFSampler + LogisticRegression | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → LogisticRegression` |
-| TruncatedSVD + Nystroem + Ridge | 60 | `column_transformer → TruncatedSVD → StandardScaler → Nystroem → StandardScaler → Ridge → Calibrated` |
-| TruncatedSVD + RBFSampler + Ridge | 60 | `column_transformer → TruncatedSVD → StandardScaler → RBFSampler → StandardScaler → Ridge → Calibrated` |
-
-### Layer 2 — Stacking Features (27 models)
-
-All models train on stacking features (class probabilities) with `StandardScaler` but no other preprocessing.
-
-| Model | n_trials | Pipeline |
-|-------|----------|----------|
-| Stacking SGD | 60 | `StandardScaler → SGDClassifier` |
-| Stacking Ridge | 60 | `StandardScaler → Ridge → Calibrated` |
-| Stacking LogisticRegression | 60 | `StandardScaler → LogisticRegression` |
-| Stacking XGBoost | 30 | `XGBClassifier` |
-| Stacking CatBoost | 30 | `CatBoostClassifier` |
-| Stacking LightGBM | 30 | `LGBMClassifier` |
-| Stacking ExtraTrees | 30 | `ExtraTreesClassifier` |
-| Stacking RandomForest | 30 | `RandomForestClassifier` |
-| Stacking HistGradientBoosting | 30 | `HistGradientBoostingClassifier` |
-| Stacking TruncatedSVD + CatBoost | 30 | `Scaler → TruncatedSVD → CatBoost` |
-| Stacking TruncatedSVD + XGBoost | 30 | `Scaler → TruncatedSVD → XGBoost` |
-| Stacking TruncatedSVD + LightGBM | 30 | `Scaler → TruncatedSVD → LightGBM` |
-| Stacking TruncatedSVD + ExtraTrees | 30 | `Scaler → TruncatedSVD → ExtraTrees` |
-| Stacking TruncatedSVD + RandomForest | 30 | `Scaler → TruncatedSVD → RandomForest` |
-| Stacking TruncatedSVD + HistGradientBoosting | 30 | `Scaler → TruncatedSVD → HistGradientBoosting` |
-| Stacking TruncatedSVD + SGD | 60 | `Scaler → TruncatedSVD → SGD` |
-| Stacking TruncatedSVD + Ridge | 60 | `Scaler → TruncatedSVD → Ridge → Calibrated` |
-| Stacking TruncatedSVD + LogisticRegression | 60 | `Scaler → TruncatedSVD → LogisticRegression` |
-| Stacking TruncatedSVD + KNN | 60 | `Scaler → TruncatedSVD → Scaler → KNN` |
-| Stacking TruncatedSVD + Nystroem + KNN | 60 | `Scaler → TruncatedSVD → Scaler → Nystroem → Scaler → KNN` |
-| Stacking TruncatedSVD + RBFSampler + KNN | 60 | `Scaler → TruncatedSVD → Scaler → RBFSampler → Scaler → KNN` |
-| Stacking TruncatedSVD + Nystroem + SGD | 60 | `Scaler → TruncatedSVD → Scaler → Nystroem → Scaler → SGD` |
-| Stacking TruncatedSVD + RBFSampler + SGD | 60 | `Scaler → TruncatedSVD → Scaler → RBFSampler → Scaler → SGD` |
-| Stacking TruncatedSVD + Nystroem + LogisticRegression | 60 | `Scaler → TruncatedSVD → Scaler → Nystroem → Scaler → LogisticRegression` |
-| Stacking TruncatedSVD + RBFSampler + LogisticRegression | 60 | `Scaler → TruncatedSVD → Scaler → RBFSampler → Scaler → LogisticRegression` |
-| Stacking TruncatedSVD + Nystroem + Ridge | 60 | `Scaler → TruncatedSVD → Scaler → Nystroem → Scaler → Ridge → Calibrated` |
-| Stacking TruncatedSVD + RBFSampler + Ridge | 60 | `Scaler → TruncatedSVD → Scaler → RBFSampler → Scaler → Ridge → Calibrated` |
+| MLP | 30 | `column_transformer → MLPClassifier` |
+| LinearSVC + Calibrated | 30 | `column_transformer → LinearSVC → Calibrated` |
+| GaussianNB | — | `column_transformer → GaussianNB` |
+| ComplementNB | — | `column_transformer → ComplementNB` |
+| LDA | — | `column_transformer → LinearDiscriminantAnalysis` |
+| TruncatedSVD + XGBoost | 30 | `column_transformer → TruncatedSVD → XGBClassifier` |
+| TruncatedSVD + CatBoost | 30 | `column_transformer → TruncatedSVD → CatBoostClassifier` |
+| TruncatedSVD + LightGBM | 30 | `column_transformer → TruncatedSVD → LGBMClassifier` |
+| TruncatedSVD + ExtraTrees | 30 | `column_transformer → TruncatedSVD → ExtraTreesClassifier` |
+| TruncatedSVD + RandomForest | 30 | `column_transformer → TruncatedSVD → RandomForestClassifier` |
+| TruncatedSVD + HistGradientBoosting | 30 | `column_transformer → TruncatedSVD → HistGradientBoostingClassifier` |
+| TruncatedSVD + SGD | 60 | `column_transformer → TruncatedSVD → Scaler → SGDClassifier` |
+| TruncatedSVD + Ridge + Calibrated | 60 | `column_transformer → TruncatedSVD → Scaler → RidgeClassifier → Calibrated` |
+| TruncatedSVD + LogisticRegression | 60 | `column_transformer → TruncatedSVD → Scaler → LogisticRegression` |
+| TruncatedSVD + KNN | 60 | `column_transformer → TruncatedSVD → Scaler → KNeighborsClassifier` |
 
 ### Preprocessing (`column_transformer`)
 
@@ -249,23 +187,23 @@ ColumnTransformer([
 ], remainder=RobustScaler())
 ```
 
-Used only for Layer 1 (raw features). Layers 2+ receive probability features with `StandardScaler` only.
+Used for raw features (layer_1). Tree-based models use `TargetEncoder` or `CatBoostEncoder` directly instead of `column_transformer`. Layers 2+ receive probability features with `StandardScaler` only.
 
 ## Key Features
 
 - **N-layer stacking**: Configurable number of stacking layers via `NUM_LAYERS` in `src/config.py`
+- **Unified model registry**: Same 24 models across all layers (linear, tree, TruncatedSVD, neural network, naive bayes)
 - **Optuna hyperparameter tuning** with 5-fold StratifiedKFold CV, MedianPruner, log loss minimization
 - **Per-model logging** to `src/logs/<model_name>.log`
-- **Training results** saved to `results/training_results.csv` with best loss, params, duration
+- **Training results** saved to `results/training_results.csv`
 - **Stacking features** generated via `cross_val_predict` for clean out-of-fold predictions
-- **All model types per layer**: Linear, tree, TruncatedSVD, kernel approximation variants
-- **Modular design**: Add new models by creating a tuning function and adding to config
+- **Modular design**: Add new models by creating a tuning function and registering in `MODEL_REGISTRY`
 
 ## Adapting for a New Competition
 
 1. Replace `data/train.csv`, `data/test.csv`
 2. Run feature engineering notebook
 3. Update `src/utils/preprocessing.py` if column names differ
-4. Update `target` parameter in `main.py` if target column name differs
-5. Run `python pipeline.py`
+4. Update target encoding columns in tuning files if column names differ
+5. Run `python main.py` to train all models
 6. Update submission notebook with new column names
