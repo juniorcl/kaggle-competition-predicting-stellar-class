@@ -75,18 +75,15 @@ def tune_lightgbm(X_train: pd.DataFrame, y_train: pd.Series, model_path: str, n_
 
     logger.info("----- Saving Pipeline -----")
 
-    pipe_tuned = make_pipeline(
-        TargetEncoder(cols=['spectral_type', 'galaxy_population']),
-        LGBMClassifier(
-            objective='multiclass',
-            metric='multi_logloss',
-            boosting_type='gbdt',
-            verbosity=-1,
-            n_estimators=2000,
-            random_state=42,
-            n_jobs=1,
-            **study.best_params
-        )
+    pipe_tuned = LGBMClassifier(
+        objective='multiclass',
+        metric='multi_logloss',
+        boosting_type='gbdt',
+        verbosity=-1,
+        n_estimators=2000,
+        random_state=42,
+        n_jobs=1,
+        **study.best_params
     ).fit(X_train, y_train)
 
 
