@@ -18,8 +18,4 @@ MODEL_REGISTRY = {
     'xgboost': tune_xgboost,
     'catboost': tune_catboost,
     'lightgbm': tune_lightgbm,
-    'extra_tree': tune_extra_tree,
-    'random_forest': tune_random_forest,
-    'hist_gradient_boosting': tune_hist_gradient_boosting,
-    'logistic_regression': tune_logistic_regression,
 }

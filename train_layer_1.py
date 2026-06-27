@@ -7,8 +7,10 @@ MODEL_DIR = "models/layer_1/"
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-X_TRAIN = pd.read_parquet("data/X_train_raw.parquet")
+X_TRAIN = pd.read_parquet("data/X_train_fe.parquet")
 Y_TRAIN = pd.read_parquet("data/y_train.parquet")
+
+X_TRAIN = X_TRAIN.astype({'spectral_type': 'category', 'galaxy_population': 'category'})
 Y_TRAIN_ENC = Y_TRAIN.loc[:, 'class_encoded']
 
 
@@ -24,4 +26,4 @@ if __name__ == "__main__":
             continue
 
         print(f"Training {model_name}...")
-        model_instance(X_TRAIN, Y_TRAIN_ENC, model_path)
+        model_instance(X_TRAIN, Y_TRAIN_ENC, model_path, n_trials=60)

@@ -3,8 +3,7 @@ import optuna
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import average_precision_score
-from sklearn.preprocessing import label_binarize
+from sklearn.metrics import log_loss
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 
@@ -47,8 +46,7 @@ def tune_random_forest(X_train: pd.DataFrame, y_train: pd.Series, model_path: st
 
             proba = model.predict_proba(X_valid_fold)
 
-            y_bin = label_binarize(y_valid_fold, classes=[0, 1, 2])
-            score = average_precision_score(y_bin, proba, average='macro')
+            score = log_loss(y_valid_fold, proba)
             scores.append(score)
 
             trial.report(np.mean(scores), step=fold)
@@ -59,10 +57,10 @@ def tune_random_forest(X_train: pd.DataFrame, y_train: pd.Series, model_path: st
         return np.mean(scores)
 
 
-    study = optuna.create_study(direction="maximize", pruner=optuna.pruners.MedianPruner(n_warmup_steps=2))
+    study = optuna.create_study(direction="minimize", pruner=optuna.pruners.MedianPruner(n_warmup_steps=2))
     study.optimize(lambda trial: objective(trial, X_train, y_train), n_trials=n_trials, n_jobs=-1, show_progress_bar=True)
 
-    logger.info(f"Best PR-AUC: {study.best_value} | Best params: {study.best_params}")
+    logger.info(f"Best Log Loss: {study.best_value} | Best params: {study.best_params}")
 
 
     logger.info("----- Saving Pipeline -----")

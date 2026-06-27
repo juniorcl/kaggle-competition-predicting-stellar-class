@@ -1,11 +1,13 @@
 from .dump_model import dump_pickle
 from .preprocessing import column_transformer
+from .feature_use import FeatureSelector
 from .logging_setup import setup_model_logger, setup_optuna_logger
 
 
 __all__ = [
     "dump_pickle",
     "column_transformer",
+    "FeatureSelector",
     "setup_model_logger",
-    "setup_optuna_logger",
+    "setup_optuna_logger"
 ]
