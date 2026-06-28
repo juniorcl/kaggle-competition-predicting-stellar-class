@@ -235,3 +235,6 @@ results/
 
 # opencode
 .opencode
+
+# worktrees
+.worktrees/
