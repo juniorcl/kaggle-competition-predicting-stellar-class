@@ -16,6 +16,6 @@ from .hist_gradient_boosting_tuning import tune_hist_gradient_boosting
 
 MODEL_REGISTRY = {
     'xgboost': tune_xgboost,
-    'catboost': tune_catboost,
     'lightgbm': tune_lightgbm,
+    'catboost': tune_catboost,
 }
